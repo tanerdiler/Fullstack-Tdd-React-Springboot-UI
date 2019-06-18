@@ -48,7 +48,7 @@ class TransactionForm extends React.Component {
                     <input data-testid="productname-input" type='text' name='productName' value={this.state.productName} onChange={(event)=>this.changeValue(event, 'productName')} />
                     <input data-testid="price-input" type='text' name='price' value={this.state.price} onChange={(event)=>this.changeValue(event, 'price')} />
                     <input data-testid="code-input" type='text' name='code' value={this.state.code} onChange={(event)=>this.changeValue(event, 'code')} />
-                    <button data-testid="save-button" onClick={this.save}/>
+                    <button data-testid="save-button" onClick={this.save}>Save</button>
                 </div>
                 {
                     this.state.state && this.state.state==='approved' && ( <div data-testid="transaction-save-approved">
