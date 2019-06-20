@@ -1,7 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { render, fireEvent, waitForElement, cleanup } from '@testing-library/react';
-import TransactionList from './trx-list';
 import App from './App';
 
 afterEach(cleanup)
@@ -12,14 +11,15 @@ it('displays transaction form by default', async () => {
 });
 
 it('switch to transaction table when list button clicked', async () => {
-    const { getByTestId, getByText } = render(<App />);
+    const { getByTestId, queryByTestId, getByText } = render(<App />);
     const listButton = await waitForElement(()=>getByTestId('list-button'));
     fireEvent.click(listButton);
     await waitForElement(()=>getByTestId('transaction-list'));
+    expect(queryByTestId('transaction-form')).toBeNull();
 })
 
 it('switch to transaction form when new button clicked', async () => {
-    const { getByTestId, getByText } = render(<App />);
+    const { getByTestId, queryByTestId, getByText } = render(<App />);
 
     const listButton = await waitForElement(()=>getByTestId('list-button'));
     fireEvent.click(listButton);
@@ -28,6 +28,7 @@ it('switch to transaction form when new button clicked', async () => {
     fireEvent.click(newButton);
 
     await waitForElement(()=>getByTestId('transaction-form'));
+    expect(queryByTestId('transaction-list')).toBeNull();
 })
 
 

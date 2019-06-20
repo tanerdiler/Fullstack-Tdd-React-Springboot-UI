@@ -1,0 +1,157 @@
+1. Transaction bilgisi kaydedildiğinde eğer onaylandıysa, "Kaydedilen satın alım işleminiz onaylanmıştır" mesajı gösterilmeli
+	-- trx-form.test.js ---> Fail
+
+		it('display approved notification after saving valid transaction ', async () => {
+		    const { getByTestId, queryByTestId, container } = render(<TransactionForm/>);
+		    const firstname = getByTestId('firstname-input');
+		    const lastname = getByTestId('lastname-input');
+		    const email = getByTestId('email-input');
+		    const productName = getByTestId('productname-input');
+		    const price = getByTestId('price-input');
+		    const code = getByTestId('code-input');
+		    const saveButton = getByTestId('save-button');
+
+		    fireEvent.change(firstname, { target: { value: 'john' } });
+		    fireEvent.change(lastname, { target: { value: 'doe' } });
+		    fireEvent.change(email, { target: { value: 'john.doe@gmail.com' } });
+		    fireEvent.change(productName, { targe   t: { value: 'MacBook Pro' } });
+		    fireEvent.change(price, { target: { value: '8000' } });
+		    fireEvent.change(code, { target: { value: 'TR456' } });
+
+		    fireEvent.click(saveButton);
+
+		    await waitForElement(()=>getByTestId('transaction-save-approved'));
+		    expect(queryByTestId('transaction-save-unapproved')).toBeNull();
+		})
+
+	-- App.js ---> Success
+			state = {
+		        id: undefined,
+		        firstname: '',
+		        lastname: '',
+		        email: '',
+		        productName: '',
+		        price: '',
+		        code: '',
+		        trxState: 'approved',
+		    }
+		    save = () => {
+		    }
+		    changeValue = (e, field) => {
+		        this.setState({[field]:e.target.value});
+		    }
+		    render() {
+		        return (
+		            <div>
+		                <div data-testid="transaction-form">
+		                    <input data-testid="firstname-input" type='text' name='firstname' value={this.state.firstname} onChange={(event)=>this.changeValue(event, 'firstname')}/>
+		                    <input data-testid="lastname-input" type='text' name='lastname' value={this.state.lastname} onChange={(event)=>this.changeValue(event, 'lastname')} />
+		                    <input data-testid="email-input" type='text' name='email' value={this.state.email} onChange={(event)=>this.changeValue(event, 'email')} />
+		                    <input data-testid="productname-input" type='text' name='productName' value={this.state.productName} onChange={(event)=>this.changeValue(event, 'productName')} />
+		                    <input data-testid="price-input" type='text' name='price' value={this.state.price} onChange={(event)=>this.changeValue(event, 'price')} />
+		                    <input data-testid="code-input" type='text' name='code' value={this.state.code} onChange={(event)=>this.changeValue(event, 'code')} />
+		                    <button data-testid="save-button" onClick={this.save}>Save</button>
+		                </div>
+		                {
+		                    this.state.trxState && this.state.trxState==='approved' && ( <div data-testid="transaction-save-approved">
+		                        Transaction Approved!
+		                    </div> )
+		                }
+                	</div>
+		        );
+		    }
+
+2. Transaction bilgisi kaydedildiğinde eğer onaylanmadıysa, "Kaydedilen satın alım işleminiz onaylanmamıştır" mesajı gösterilmeli
+	-- trx-form.test.js ---> Failed
+		it('display unapproved notification after saving invalid transaction', async () => {
+		    const { getByTestId,queryByTestId, getByText } = render(<TransactionForm/>);
+		    const firstname = getByTestId('firstname-input');
+		    const lastname = getByTestId('lastname-input');
+		    const email = getByTestId('email-input');
+		    const productName = getByTestId('productname-input');
+		    const price = getByTestId('price-input');
+		    const code = getByTestId('code-input');
+		    const saveButton = getByTestId('save-button');
+
+		    fireEvent.change(firstname, { target: { value: 'mary' } });
+		    fireEvent.change(lastname, { target: { value: 'doe' } });
+		    fireEvent.change(email, { target: { value: 'mary.doe@gmail.com' } });
+		    fireEvent.change(productName, { target: { value: 'MacBook Pro' } });
+		    fireEvent.change(price, { target: { value: '8000' } });
+		    fireEvent.change(code, { target: { value: 'TR457' } });
+
+		    fireEvent.click(saveButton);
+
+		    await waitForElement(()=>getByTestId('transaction-save-unapproved'));
+		    expect(queryByTestId('transaction-save-approved')).toBeNull();
+		})
+
+    -- trx-form.js --Failed
+        {
+            this.state.trxState && this.state.trxState==='unapproved' && (<div data-testid="transaction-save-unapproved">
+                Transaction Unapproved!
+            </div>)
+        }
+
+3. Backend Api Rest servislerine istek yapılarak transaction kaydedilmeli ve onay duruma göre ilgili mesaj gösterilmeli
+	-- Axios modülü kullanılarak Rest istekleri yapılacaktır
+	-- Birim test yaptığımızda axis çağrıları istediğimiz cevabı bize döndürecek şekilde mocklanmalı
+	-- Servis Request ve Response yapısı Contract'lar oluşturulurken belirlenmişti
+	
+	-- trx-form.test.js ---> Fail
+	. Satın Alım'ın onaylandığı test için yapılan çağrıyı mocklayalım
+
+		beforeEach(()=>{
+		    const mock = new MockAdapter(axios);
+
+		    mock.onPost('/transactions', {
+		        firstname: 'john',
+		        lastname: 'doe',
+		        email: 'john.doe@gmail.com',
+		        productName: 'MacBook Pro',
+		        price: '8000',
+		        transactionCode: 'TR456'
+		    }).reply(200,
+
+		            { id: 1, state: 'approved' }
+
+		    );
+	    }
+
+	. Satın Alım'ın onaylanmadığı test için yapılan çağrıyı mocklayalım
+
+	    mock.onPost('/transactions', {
+	        firstname: 'mary',
+	        lastname: 'doe',
+	        email: 'mary.doe@gmail.com',
+	        productName: 'MacBook Pro',
+	        price: '8000',
+	        transactionCode: 'TR457'
+	    }).reply(200,
+	            { id: 1, state: 'unapproved' }
+	    );
+
+	--trx-form.js
+	. Axios ile rest service istek yapan kodu ekleyelim
+
+		async getData() {
+	        const self = this;
+	        const data = {
+	            firstname: this.state.firstname,
+	            lastname: this.state.lastname,
+	            email: this.state.email,
+	            productName: this.state.productName,
+	            price: this.state.price,
+	            transactionCode: this.state.code
+	        };
+	        await axios.post('/transactions', data)
+	        .then(function(response) {
+	            console.log(response.data);
+	            self.setState({id: response.data.id, trxState: response.data.state});
+	        });
+
+	    }
+
+	   	save = () => {
+        	this.getData();
+    	}

@@ -10,7 +10,7 @@ class TransactionForm extends React.Component {
         productName: '',
         price: '',
         code: '',
-        state: undefined,
+        trxState: undefined,
     }
 
     async getData() {
@@ -26,9 +26,8 @@ class TransactionForm extends React.Component {
         await axios.post('/transactions', data)
         .then(function(response) {
             console.log(response.data);
-            self.setState({id: response.data.id, state: response.data.state});
+            self.setState({id: response.data.id, trxState: response.data.state});
         });
-        //this.setState({ id: result.data.id, state: result.data.state });
 
     }
 
@@ -51,12 +50,12 @@ class TransactionForm extends React.Component {
                     <button data-testid="save-button" onClick={this.save}>Save</button>
                 </div>
                 {
-                    this.state.state && this.state.state==='approved' && ( <div data-testid="transaction-save-approved">
+                    this.state.trxState && this.state.trxState==='approved' && ( <div data-testid="transaction-save-approved">
                         Transaction Approved!
                     </div> )
                 }
                 {
-                    this.state.state && this.state.state==='unapproved' && (<div data-testid="transaction-save-unapproved">
+                    this.state.trxState && this.state.trxState==='unapproved' && (<div data-testid="transaction-save-unapproved">
                         Transaction Unapproved!
                     </div>)
                 }
